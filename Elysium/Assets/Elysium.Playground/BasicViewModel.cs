@@ -11,6 +11,7 @@ namespace Elysium.Playground
         
         private void Start()
         {
+            _lastTime = 0;
             Name = "hello";
         }
 

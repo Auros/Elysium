@@ -1,17 +1,20 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using Elysium.Components;
 using JetBrains.Annotations;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Elysium
 {
     /// <summary>
     /// Acts as a bridge to define a view model.
     /// </summary>
-    [PublicAPI, ExecuteAlways, DisallowMultipleComponent]
+    [PublicAPI, ExecuteAlways, DisallowMultipleComponent, DefaultExecutionOrder(-10000)]
     public class ViewModelDefinition : NotifiableBehaviour
     {
         private object? _viewModel;
+        private readonly List<ComponentPropertyBinding> _bindings = new();
 
         [field: SerializeField]
         internal Object? ViewModelObject { get; private set; }
@@ -39,21 +42,37 @@ namespace Elysium
                 };
             }
         }
+
+        private void Start()
+        {
+            ElysiumBindings.OnBindingRegistered += BindingRegistered;
+            ElysiumBindings.OnBindingUnregistered += BindingUnregistered;
+        }
+
+        private void OnDestroy()
+        {
+            ElysiumBindings.OnBindingUnregistered -= BindingUnregistered;
+            ElysiumBindings.OnBindingRegistered -= BindingRegistered; 
+        }
         
-        private void OnEnable()
+        private void BindingRegistered(ViewModelDefinition definition, ComponentPropertyBinding binding)
         {
-            // TODO: Subscribe to static binding UI system
+            // Make sure the binding is relevant to us.
+            if (definition != this)
+                return;
+            
+            // Add the binding to our internal list.
+            _bindings.Add(binding);
         }
 
-        private void OnDisable()
+        private void BindingUnregistered(ViewModelDefinition definition, ComponentPropertyBinding binding)
         {
-            // TODO: Unsubscribe from static binding UI SYSTEM
-        }
-
-        private void OnTransformChildrenChanged()
-        {
-            print("child changed");
-            // TODO: Check registered bindings to ensure that we still own them.
+            // Make sure the binding is relevant to us.
+            if (definition != this)
+                return;
+            
+            // Remove the binding from our internal list
+            _bindings.Remove(binding);
         }
 
         protected override void OnPropertyChanging(string? propertyName = null)
@@ -86,7 +105,17 @@ namespace Elysium
         
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            print($"Property Changed: {e.PropertyName}");
+            if (ViewModel == null)
+                return;
+            
+            foreach (var binding in _bindings)
+            {
+                // Skip over the bindings that don't match this property update.
+                if (binding.Name != e.PropertyName)
+                    continue;
+                
+                binding.OnValueChanged(ViewModel, e.PropertyName);
+            }
         }
     }
 }
