@@ -541,7 +541,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 12
+  m_text: 1043
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -850,7 +850,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 12
+  m_text: 1043
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1499,6 +1499,7 @@ GameObject:
   - component: {fileID: 1772102428}
   - component: {fileID: 1772102433}
   - component: {fileID: 1772102434}
+  - component: {fileID: 1772102435}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1604,7 +1605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7c7bccd0ce0e2441842037807a05b82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lastTime: 12
+  _lastTime: 13
 --- !u!114 &1772102434
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1617,7 +1618,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9ae361249a2ad44496c9f2fa3946367, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <ViewModelObject>k__BackingField: {fileID: 1772102433}
+  <ViewModelObject>k__BackingField: {fileID: 0}
+--- !u!114 &1772102435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1772102427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e865615b1f0e0114082e59b7fdc345f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _viewModelDefinition: {fileID: 1772102434}
 --- !u!1 &1987297596
 GameObject:
   m_ObjectHideFlags: 0
