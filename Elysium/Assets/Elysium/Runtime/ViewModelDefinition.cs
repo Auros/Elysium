@@ -10,18 +10,34 @@ namespace Elysium
     [PublicAPI, DisallowMultipleComponent]
     public class ViewModelDefinition : NotifiableBehaviour
     {
-        [SerializeField]
         private object? _viewModel;
 
+        [field: SerializeField]
+        internal Object? ViewModelObject { get; private set; }
+        
         /// <summary>
         /// The View Model in this definition.
         /// </summary>
         public object? ViewModel
         {
             get => _viewModel;
-            set => SetField(ref _viewModel, value);
-        }
+            set
+            {
+                if (!SetField(ref _viewModel, value))
+                    return;
 
+                ViewModelObject = value switch
+                {
+                    // If we have successfully set the variable, update the ViewModelObject so it can get serialized 
+                    // properly.
+                    Object valueAsUnityObject => valueAsUnityObject,
+                    // However if the value is null, we also want to make sure the serialized field is updated
+                    null => null,
+                    _ => ViewModelObject
+                };
+            }
+        }
+        
         private void OnEnable()
         {
             // TODO: Subscribe to static binding UI system
