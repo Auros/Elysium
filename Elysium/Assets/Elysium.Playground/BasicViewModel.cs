@@ -1,16 +1,16 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using PropertyChanged.SourceGenerator;
+using UnityEngine;
 
 namespace Elysium.Playground
 {
-    [INotifyPropertyChanged]
-    public partial class BasicViewModel
+    public partial class BasicViewModel : MonoBehaviour
     {
-        [ObservableProperty]
-        private string _name = string.Empty;
-        
+        [Notify]
+        private string _name;
+
         private void Start()
         {
-            Name = "Asdf";
+            Name = "hello";
         }
     }
 }
