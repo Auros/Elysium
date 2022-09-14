@@ -1,8 +1,9 @@
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Elysium.Components
 {
-    [ExecuteAlways, DefaultExecutionOrder(-8500)]
+    [PublicAPI, ExecuteAlways, DefaultExecutionOrder(-8500)]
     public abstract class ComponentPropertyBinding : MonoBehaviour
     {
         [SerializeField] private string _name = string.Empty;
@@ -16,6 +17,8 @@ namespace Elysium.Components
         protected virtual void Start() => UpdateDefinition();
         
         protected virtual void OnTransformParentChanged() => UpdateDefinition();
+
+        protected internal virtual void SetInteraction(bool value) { } 
 
         private void UpdateDefinition()
         {
@@ -40,6 +43,14 @@ namespace Elysium.Components
                 return;
             
             _previousDefinition.SetPropertyOnViewModel(Name, value);
+        }
+
+        protected void SendCommand()
+        {
+            if (_previousDefinition == null)
+                return;
+            
+            _previousDefinition.SendCommandEvent(Name);
         }
     }
 }

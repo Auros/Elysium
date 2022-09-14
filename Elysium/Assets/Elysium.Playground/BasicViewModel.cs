@@ -1,3 +1,6 @@
+using System;
+using System.Windows.Input;
+using JetBrains.Annotations;
 using PropertyChanged.SourceGenerator;
 using UnityEngine;
 
@@ -9,12 +12,17 @@ namespace Elysium.Playground
         [Notify] private string _fieldValue = string.Empty;
         [Notify] private string _timeSinceStart = string.Empty;
         [SerializeField] private int _lastTime;
+
+        [PublicAPI]
+        public ICommand CoolCommand { get; private set; }
         
         private void Start()
         {
             _lastTime = 0;
             FieldValue = "";
             TimeSinceStart = "0";
+            
+            CoolCommand = new TestCommand(() => print("Command Invoked"), () => FieldValue.Length != 0);
         }
 
         private void Update()
@@ -25,6 +33,23 @@ namespace Elysium.Playground
 
             TimeSinceStart = time.ToString();
             _lastTime = time;
+        }
+
+        private class TestCommand : ICommand
+        {
+            private readonly Action _execute;
+            private readonly Func<bool> _canExecute;
+            public event EventHandler CanExecuteChanged;
+
+            public TestCommand(Action execute, Func<bool> canExecute)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
+
+            public bool CanExecute(object parameter) => _canExecute.Invoke();
+
+            public void Execute(object parameter) => _execute?.Invoke();
         }
     }
 }

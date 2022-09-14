@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Windows.Input;
 using Elysium.Components;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -15,6 +17,7 @@ namespace Elysium
     public class ViewModelDefinition : NotifiableBehaviour
     {
         private object? _viewModel;
+        private readonly List<CommandContext> _commandContexts = new();
         private readonly List<ComponentPropertyBinding> _bindings = new();
 
         [field: SerializeField]
@@ -57,6 +60,22 @@ namespace Elysium
             // Send some property change events to start the ViewModel events in case it was assigned via serialization
             OnPropertyChanging(nameof(ViewModel));
             OnPropertyChanged(nameof(ViewModel));
+        }
+
+        private void Update()
+        {
+            foreach (var ctx in _commandContexts)
+            {
+                foreach (var binding in _bindings)
+                {
+                    // If the binding name doesn't match, continue the search
+                    if (binding.Name != ctx.Name)
+                        continue;
+                    
+                    // Set the interactability of the binding to the can execute value.
+                    binding.SetInteraction(ctx.Command.CanExecute(null));
+                }
+            }
         }
 
         private void OnDestroy()
@@ -108,6 +127,12 @@ namespace Elysium
             // Ensure we're working with the right property.
             if (propertyName != nameof(ViewModel))
                 return;
+
+            _commandContexts.Clear();
+            var commandProperties = ViewModel?.GetType().GetProperties().Where(p => p.PropertyType.IsAssignableFrom(typeof(ICommand)));
+            if (commandProperties is not null)
+                foreach (var property in commandProperties)
+                    _commandContexts.Add(new CommandContext(property.Name, (property.GetValue(ViewModel) as ICommand)!));
             
             // We can only listen into property changes if the view model supports it.
             if (ViewModel is not INotifyPropertyChanged propertyChanger)
@@ -143,6 +168,9 @@ namespace Elysium
         /// <param name="value">The value to set the property to.</param>
         public void SetPropertyOnViewModel(string propertyName, object value)
             => ViewModel?.GetType().GetProperty(propertyName)?.SetValue(ViewModel, value);
+
+        public void SendCommandEvent(string propertyName)
+            => _commandContexts.FirstOrDefault(c => c.Name == propertyName)?.Command.Execute(null);
         
         /// <summary>
         /// Gets the bindings relevantly scoped to a GameObject
@@ -199,6 +227,18 @@ namespace Elysium
             for (int i = 0; i < gameObjects.Length; i++)
                 gameObjects[i] = gameObject.transform.GetChild(i).gameObject;
             return gameObjects;
+        }
+
+        private class CommandContext
+        {
+            public string Name { get; }
+            public ICommand Command { get; }
+
+            public CommandContext(string name, ICommand command)
+            {
+                Name = name;
+                Command = command;
+            }
         }
     }
 }
