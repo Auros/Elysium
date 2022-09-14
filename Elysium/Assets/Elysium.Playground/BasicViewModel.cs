@@ -21,7 +21,7 @@ namespace Elysium.Playground
             _lastTime = 0;
             FieldValue = "";
             TimeSinceStart = "0";
-            CoolCommand = new TestCommand(() => print("Command Invoked"), () => FieldValue.Length != 0);
+            //CoolCommand = new TestCommand(() => print("Command Invoked"), () => FieldValue.Length != 0);
         }
 
         private void Update()
@@ -37,23 +37,6 @@ namespace Elysium.Playground
         public void SendData()
         {
             print("sent data");
-        }
-
-        private class TestCommand : ICommand
-        {
-            private readonly Action _execute;
-            private readonly Func<bool> _canExecute;
-            public event EventHandler CanExecuteChanged;
-
-            public TestCommand(Action execute, Func<bool> canExecute)
-            {
-                _execute = execute;
-                _canExecute = canExecute;
-            }
-
-            public bool CanExecute(object parameter) => _canExecute.Invoke();
-
-            public void Execute(object parameter) => _execute?.Invoke();
         }
     }
 }
