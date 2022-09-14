@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Elysium.Components;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace Elysium
     /// <summary>
     /// Acts as a bridge to define a view model.
     /// </summary>
-    [PublicAPI, DisallowMultipleComponent]
+    [PublicAPI, ExecuteAlways, DisallowMultipleComponent]
     public class ViewModelDefinition : NotifiableBehaviour
     {
         private object? _viewModel;
@@ -20,7 +21,8 @@ namespace Elysium
         /// </summary>
         public object? ViewModel
         {
-            get => _viewModel;
+            // We check the unity object reference first to ensure that the ViewModel hasn't been destroyed.
+            get => ViewModelObject != null ? ViewModelObject : _viewModel;
             set
             {
                 if (!SetField(ref _viewModel, value))
@@ -52,6 +54,39 @@ namespace Elysium
         {
             print("child changed");
             // TODO: Check registered bindings to ensure that we still own them.
+        }
+
+        protected override void OnPropertyChanging(string? propertyName = null)
+        {
+            // Ensure we're working with the right property.
+            if (propertyName != nameof(ViewModel))
+                return;
+
+            // We can only unsubscribe from property changes if the view model supports it.
+            if (ViewModel is not INotifyPropertyChanged propertyChanger)
+                return;
+
+            // Unsubscribe us from the property changed event.
+            propertyChanger.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        protected override void OnPropertyChanged(string? propertyName = null)
+        {
+            // Ensure we're working with the right property.
+            if (propertyName != nameof(ViewModel))
+                return;
+            
+            // We can only listen into property changes if the view model supports it.
+            if (ViewModel is not INotifyPropertyChanged propertyChanger)
+                return;
+
+            // Subscribe us to the property changed event.
+            propertyChanger.PropertyChanged += ViewModel_PropertyChanged;
+        }
+        
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            print($"Property Changed: {e.PropertyName}");
         }
     }
 }
