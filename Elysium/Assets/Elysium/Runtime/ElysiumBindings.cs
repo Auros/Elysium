@@ -3,7 +3,7 @@ using Elysium.Components;
 
 namespace Elysium
 {
-    public static class ElysiumBindings
+    internal static class ElysiumBindings
     {
         public static event Action<ViewModelDefinition, ComponentPropertyBinding>? OnBindingRegistered; 
         public static event Action<ViewModelDefinition, ComponentPropertyBinding>? OnBindingUnregistered;

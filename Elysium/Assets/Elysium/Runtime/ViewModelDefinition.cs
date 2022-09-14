@@ -95,7 +95,7 @@ namespace Elysium
             
             // Set the initial value if applicable
             if (ViewModel != null)
-                binding.OnValueChanged(ViewModel, binding.Name);
+                binding.OnValueChanged(ElysiumInvoker.GetPropertyValue(ViewModel, binding.Name));
         }
 
         private void BindingUnregistered(ViewModelDefinition definition, ComponentPropertyBinding binding)
@@ -129,10 +129,8 @@ namespace Elysium
                 return;
 
             _commandContexts.Clear();
-            var commandProperties = ViewModel?.GetType().GetProperties().Where(p => p.PropertyType.IsAssignableFrom(typeof(ICommand)));
-            if (commandProperties is not null)
-                foreach (var property in commandProperties)
-                    _commandContexts.Add(new CommandContext(property.Name, (property.GetValue(ViewModel) as ICommand)!));
+            foreach (var property in ElysiumInvoker.GetPropertyNamesOfType<ICommand>(ViewModel?.GetType()))
+                _commandContexts.Add(new CommandContext(property, (ElysiumInvoker.GetPropertyValue(ViewModel, property) as ICommand)!));
             
             // We can only listen into property changes if the view model supports it.
             if (ViewModel is not INotifyPropertyChanged propertyChanger)
@@ -143,7 +141,7 @@ namespace Elysium
             
             // Set the initial values
             foreach (var binding in _bindings)
-                binding.OnValueChanged(ViewModel, binding.Name);
+                binding.OnValueChanged(ElysiumInvoker.GetPropertyValue(ViewModel, binding.Name));
         }
         
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -157,7 +155,7 @@ namespace Elysium
                 if (binding.Name != e.PropertyName)
                     continue;
                 
-                binding.OnValueChanged(ViewModel, e.PropertyName);
+                binding.OnValueChanged(ElysiumInvoker.GetPropertyValue(ViewModel, e.PropertyName));
             }
         }
 
@@ -167,7 +165,7 @@ namespace Elysium
         /// <param name="propertyName">The name of the property.</param>
         /// <param name="value">The value to set the property to.</param>
         public void SetPropertyOnViewModel(string propertyName, object value)
-            => ViewModel?.GetType().GetProperty(propertyName)?.SetValue(ViewModel, value);
+            => ElysiumInvoker.SetPropertyValue(ViewModel, propertyName, value);
 
         public void SendCommandEvent(string propertyName)
         {
@@ -180,11 +178,7 @@ namespace Elysium
             }
 
             // If not, try to find a parameterless method.
-            var method = ViewModel?.GetType().GetMethod(propertyName);
-            if (method is null || method.GetParameters().Length != 0)
-                return;
-
-            method.Invoke(ViewModel, Array.Empty<object>());
+            ElysiumInvoker.ParameterlessMethod(ViewModel, propertyName);
         }
         
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System;
-using Elysium.Components;
+﻿using Elysium.Components;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +26,7 @@ namespace Elysium.Bindings.UI
             _button.interactable = value;
         }
 
-        public override void OnValueChanged(object host, string propertyName)
+        public override void OnValueChanged(object? value)
         {
             // Do nothing. Commands don't need to set any value.
         }

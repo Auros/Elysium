@@ -12,7 +12,7 @@ namespace Elysium.Components
 
         public string Name => _name;
 
-        public abstract void OnValueChanged(object host, string propertyName);
+        public abstract void OnValueChanged(object? value);
 
         protected virtual void Start() => UpdateDefinition();
         
