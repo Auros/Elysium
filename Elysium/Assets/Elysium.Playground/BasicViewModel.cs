@@ -1,4 +1,3 @@
-using System;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using PropertyChanged.SourceGenerator;
