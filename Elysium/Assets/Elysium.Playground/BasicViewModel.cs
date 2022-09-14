@@ -21,7 +21,6 @@ namespace Elysium.Playground
             _lastTime = 0;
             FieldValue = "";
             TimeSinceStart = "0";
-            
             CoolCommand = new TestCommand(() => print("Command Invoked"), () => FieldValue.Length != 0);
         }
 
@@ -33,6 +32,11 @@ namespace Elysium.Playground
 
             TimeSinceStart = time.ToString();
             _lastTime = time;
+        }
+
+        public void SendData()
+        {
+            print("sent data");
         }
 
         private class TestCommand : ICommand

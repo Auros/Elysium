@@ -170,7 +170,22 @@ namespace Elysium
             => ViewModel?.GetType().GetProperty(propertyName)?.SetValue(ViewModel, value);
 
         public void SendCommandEvent(string propertyName)
-            => _commandContexts.FirstOrDefault(c => c.Name == propertyName)?.Command.Execute(null);
+        {
+            // Search for the command from what we know about the View Model.
+            var command = _commandContexts.FirstOrDefault(c => c.Name == propertyName)?.Command;
+            if (command is not null)
+            {
+                command.Execute(null);
+                return;
+            }
+
+            // If not, try to find a parameterless method.
+            var method = ViewModel?.GetType().GetMethod(propertyName);
+            if (method is null || method.GetParameters().Length != 0)
+                return;
+
+            method.Invoke(ViewModel, Array.Empty<object>());
+        }
         
         /// <summary>
         /// Gets the bindings relevantly scoped to a GameObject
