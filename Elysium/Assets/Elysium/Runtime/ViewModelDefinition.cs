@@ -51,14 +51,16 @@ namespace Elysium
             foreach (var binding in componentPropertyBindings)
                 BindingRegistered(this, binding);
             
-            print("Registered");
             ElysiumBindings.OnBindingRegistered += BindingRegistered;
             ElysiumBindings.OnBindingUnregistered += BindingUnregistered;
+            
+            // Send some property change events to start the ViewModel events in case it was assigned via serialization
+            OnPropertyChanging(nameof(ViewModel));
+            OnPropertyChanged(nameof(ViewModel));
         }
 
         private void OnDestroy()
         {
-            print("Unregistered");
             ElysiumBindings.OnBindingUnregistered -= BindingUnregistered;
             ElysiumBindings.OnBindingRegistered -= BindingRegistered; 
         }
@@ -133,6 +135,14 @@ namespace Elysium
                 binding.OnValueChanged(ViewModel, e.PropertyName);
             }
         }
+
+        /// <summary>
+        /// Sets a property on the current View Model
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <param name="value">The value to set the property to.</param>
+        public void SetPropertyOnViewModel(string propertyName, object value)
+            => ViewModel?.GetType().GetProperty(propertyName)?.SetValue(ViewModel, value);
         
         /// <summary>
         /// Gets the bindings relevantly scoped to a GameObject
@@ -190,6 +200,5 @@ namespace Elysium
                 gameObjects[i] = gameObject.transform.GetChild(i).gameObject;
             return gameObjects;
         }
-
     }
 }

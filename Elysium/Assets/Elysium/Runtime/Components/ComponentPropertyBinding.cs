@@ -6,17 +6,16 @@ namespace Elysium.Components
     public abstract class ComponentPropertyBinding : MonoBehaviour
     {
         [SerializeField] private string _name = string.Empty;
+        
         private ViewModelDefinition? _previousDefinition;
 
         public string Name => _name;
 
-        public bool HasDefinition => _previousDefinition;
-        
         public abstract void OnValueChanged(object host, string propertyName);
 
-        private void Start() => UpdateDefinition();
+        protected virtual void Start() => UpdateDefinition();
         
-        private void OnTransformParentChanged() => UpdateDefinition();
+        protected virtual void OnTransformParentChanged() => UpdateDefinition();
 
         private void UpdateDefinition()
         {
@@ -33,6 +32,14 @@ namespace Elysium.Components
             // Tell the view model definitions that this binding can be registered.
             ElysiumBindings.Add(definition, this);
             _previousDefinition = definition;
+        }
+
+        protected void SetValue(object value)
+        {
+            if (_previousDefinition == null)
+                return;
+            
+            _previousDefinition.SetPropertyOnViewModel(Name, value);
         }
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Elysium.TextMeshPro
 {
     [RequireComponent(typeof(TMP_Text))]
-    public class TMPTextTextPropertyBinding : ComponentPropertyBinding
+    public class TMP_TextTextPropertyBinding : ComponentPropertyBinding
     {
         private TMP_Text _text;
 
