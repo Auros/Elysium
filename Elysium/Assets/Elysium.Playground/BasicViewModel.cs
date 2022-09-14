@@ -6,13 +6,15 @@ namespace Elysium.Playground
     [ExecuteAlways]
     public partial class BasicViewModel : MonoBehaviour
     {
-        [Notify] private string _name;
+        [Notify] private string _fieldValue = string.Empty;
+        [Notify] private string _timeSinceStart = string.Empty;
         [SerializeField] private int _lastTime;
         
         private void Start()
         {
             _lastTime = 0;
-            Name = "hello";
+            FieldValue = "yo";
+            TimeSinceStart = "hello";
         }
 
         private void Update()
@@ -21,7 +23,7 @@ namespace Elysium.Playground
             if (_lastTime >= time)
                 return;
 
-            Name = time.ToString();
+            TimeSinceStart = time.ToString();
             _lastTime = time;
         }
     }

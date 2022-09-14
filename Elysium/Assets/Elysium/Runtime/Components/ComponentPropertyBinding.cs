@@ -2,17 +2,20 @@ using UnityEngine;
 
 namespace Elysium.Components
 {
-    [ExecuteAlways]
+    [ExecuteAlways, DefaultExecutionOrder(-8500)]
     public abstract class ComponentPropertyBinding : MonoBehaviour
     {
         [SerializeField] private string _name = string.Empty;
         private ViewModelDefinition? _previousDefinition;
 
         public string Name => _name;
+
+        public bool HasDefinition => _previousDefinition;
         
         public abstract void OnValueChanged(object host, string propertyName);
 
         private void Start() => UpdateDefinition();
+        
         private void OnTransformParentChanged() => UpdateDefinition();
 
         private void UpdateDefinition()

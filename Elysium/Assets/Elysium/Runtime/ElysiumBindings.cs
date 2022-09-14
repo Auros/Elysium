@@ -1,6 +1,5 @@
 using System;
 using Elysium.Components;
-using UnityEngine;
 
 namespace Elysium
 {
@@ -14,13 +13,5 @@ namespace Elysium
         
         public static void Remove(ViewModelDefinition definition, ComponentPropertyBinding binding)
             => OnBindingUnregistered?.Invoke(definition, binding);
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Init()
-        {
-            // Forcibly unsubscribe everything when the domain gets reloaded
-            OnBindingUnregistered = null;
-            OnBindingRegistered = null;
-        }
     }
 }

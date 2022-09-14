@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Elysium.Components;
@@ -10,7 +11,7 @@ namespace Elysium
     /// <summary>
     /// Acts as a bridge to define a view model.
     /// </summary>
-    [PublicAPI, ExecuteAlways, DisallowMultipleComponent, DefaultExecutionOrder(-10000)]
+    [PublicAPI, ExecuteAlways, DisallowMultipleComponent]
     public class ViewModelDefinition : NotifiableBehaviour
     {
         private object? _viewModel;
@@ -45,12 +46,19 @@ namespace Elysium
 
         private void Start()
         {
+            // Gets the bindings scoped to this view definition.
+            var componentPropertyBindings = GetScopedBindings(gameObject);
+            foreach (var binding in componentPropertyBindings)
+                BindingRegistered(this, binding);
+            
+            print("Registered");
             ElysiumBindings.OnBindingRegistered += BindingRegistered;
             ElysiumBindings.OnBindingUnregistered += BindingUnregistered;
         }
 
         private void OnDestroy()
         {
+            print("Unregistered");
             ElysiumBindings.OnBindingUnregistered -= BindingUnregistered;
             ElysiumBindings.OnBindingRegistered -= BindingRegistered; 
         }
@@ -63,6 +71,10 @@ namespace Elysium
             
             // Add the binding to our internal list.
             _bindings.Add(binding);
+            
+            // Set the initial value if applicable
+            if (ViewModel != null)
+                binding.OnValueChanged(ViewModel, binding.Name);
         }
 
         private void BindingUnregistered(ViewModelDefinition definition, ComponentPropertyBinding binding)
@@ -101,6 +113,10 @@ namespace Elysium
 
             // Subscribe us to the property changed event.
             propertyChanger.PropertyChanged += ViewModel_PropertyChanged;
+            
+            // Set the initial values
+            foreach (var binding in _bindings)
+                binding.OnValueChanged(ViewModel, binding.Name);
         }
         
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -117,5 +133,63 @@ namespace Elysium
                 binding.OnValueChanged(ViewModel, e.PropertyName);
             }
         }
+        
+        /// <summary>
+        /// Gets the bindings relevantly scoped to a GameObject
+        /// </summary>
+        /// <param name="gameObject">The GameObject to search on.</param>
+        /// <returns>The scoped bindings from the GameObject</returns>
+        protected static List<ComponentPropertyBinding> GetScopedBindings(GameObject gameObject)
+        {
+            List<ComponentPropertyBinding> contexts = new();
+            var localRecurses = LocalRecurseUntilComponentWithType(GetDirectChildren(gameObject), typeof(ViewModelDefinition));
+            foreach (var local in localRecurses)
+            {
+                var context = local.GetComponent<ComponentPropertyBinding>();
+                if (!context)
+                    continue;
+                contexts.Add(context);
+            }
+            return contexts;
+        }
+
+        /// <summary>
+        /// Gets every GameObject within the children of a GameObject until a specific type is seen, ending that branch
+        /// to search on.
+        /// </summary>
+        /// <param name="roots">The original roots.</param>
+        /// <param name="type">The type to end a branch search on.</param>
+        /// <returns>The relevant GameObjects in the search.</returns>
+        private static List<GameObject> LocalRecurseUntilComponentWithType(IEnumerable<GameObject> roots, Type type)
+        {
+            List<GameObject> gameObjects = new();
+            foreach (var root in roots)
+            {
+                var component = root.GetComponent(type);
+                gameObjects.Add(root);
+                
+                if (component)
+                    continue;
+
+                var directChildren = GetDirectChildren(root);
+                var localRecurses = LocalRecurseUntilComponentWithType(directChildren, type);
+                gameObjects.AddRange(localRecurses);
+            }
+            return gameObjects;
+        }
+        
+        /// <summary>
+        /// Gets the GameObjects of the direct children of a GameObject 
+        /// </summary>
+        /// <param name="gameObject">The GameObject to get the children of.</param>
+        /// <returns>The children of the GameObject.</returns>
+        private static IEnumerable<GameObject> GetDirectChildren(GameObject gameObject)
+        {
+            var gameObjects = new GameObject[gameObject.transform.childCount];
+            for (int i = 0; i < gameObjects.Length; i++)
+                gameObjects[i] = gameObject.transform.GetChild(i).gameObject;
+            return gameObjects;
+        }
+
     }
 }

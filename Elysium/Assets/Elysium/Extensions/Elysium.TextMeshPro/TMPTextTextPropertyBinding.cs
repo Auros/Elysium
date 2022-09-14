@@ -17,10 +17,7 @@ namespace Elysium.TextMeshPro
         public override void OnValueChanged(object host, string propertyName)
         {
             var value = host.GetType().GetProperty(propertyName)?.GetValue(host);
-            if (value is not string valueAsString)
-                return;
-
-            _text.text = valueAsString;
+            _text.text = value?.ToString();
         }
     }
 }
