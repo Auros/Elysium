@@ -13,8 +13,8 @@ namespace Elysium.Playground
         private void Start()
         {
             _lastTime = 0;
-            FieldValue = "yo";
-            TimeSinceStart = "hello";
+            FieldValue = "";
+            TimeSinceStart = "0";
         }
 
         private void Update()
