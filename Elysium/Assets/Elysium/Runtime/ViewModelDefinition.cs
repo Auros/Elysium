@@ -66,6 +66,10 @@ namespace Elysium
         {
             foreach (var ctx in _commandContexts)
             {
+                // If the command is null, we skip over it.
+                if (ctx.Command == null)
+                    continue;
+                
                 foreach (var binding in _bindings)
                 {
                     // If the binding name doesn't match, continue the search
@@ -154,8 +158,13 @@ namespace Elysium
                 // Skip over the bindings that don't match this property update.
                 if (binding.Name != e.PropertyName)
                     continue;
-                
-                binding.OnValueChanged(ElysiumInvoker.GetPropertyValue(ViewModel, e.PropertyName));
+
+                var value = ElysiumInvoker.GetPropertyValue(ViewModel, e.PropertyName);
+                var ctx = _commandContexts.FirstOrDefault(c => c.Name == e.PropertyName);
+                if (ctx is not null)
+                    ctx.Command = value as ICommand;
+
+                binding.OnValueChanged(value);
             }
         }
 
@@ -189,15 +198,21 @@ namespace Elysium
         protected static List<ComponentPropertyBinding> GetScopedBindings(GameObject gameObject)
         {
             List<ComponentPropertyBinding> contexts = new();
+            
             var localRecurses = LocalRecurseUntilComponentWithType(GetDirectChildren(gameObject), typeof(ViewModelDefinition));
+            localRecurses.Add(gameObject);
+            
             foreach (var local in localRecurses)
             {
-                var context = local.GetComponent<ComponentPropertyBinding>();
+                var components = local.GetComponents<ComponentPropertyBinding>();
+
+                foreach (var component in components)
+                {
+                    if (!component || !component.isActiveAndEnabled)
+                        continue;
                 
-                if (!context)
-                    continue;
-                
-                contexts.Add(context);
+                    contexts.Add(component);   
+                }
             }
             return contexts;
         }
@@ -243,9 +258,9 @@ namespace Elysium
         private class CommandContext
         {
             public string Name { get; }
-            public ICommand Command { get; }
+            public ICommand? Command { get; set; }
 
-            public CommandContext(string name, ICommand command)
+            public CommandContext(string name, ICommand? command)
             {
                 Name = name;
                 Command = command;

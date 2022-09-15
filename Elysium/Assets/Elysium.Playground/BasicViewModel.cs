@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using PropertyChanged.SourceGenerator;
@@ -14,7 +16,15 @@ namespace Elysium.Playground
 
         [PublicAPI]
         public ICommand CoolCommand { get; private set; }
-        
+
+        [PublicAPI]
+        public ObservableCollection<TestObj> TestCollection { get; set; } = new()
+        {
+            new TestObj("A"),
+            new TestObj("B"),
+            new TestObj("C"),
+        };
+
         private void Start()
         {
             _lastTime = 0;
@@ -33,9 +43,28 @@ namespace Elysium.Playground
             _lastTime = time;
         }
 
-        public void SendData()
+        public void Add()
         {
-            print("sent data");
+            TestCollection.Add(new TestObj(Random.Range(0, 100).ToString()));
+        }
+
+        public void Remove()
+        {
+            var item = TestCollection.LastOrDefault();
+            if (item is null)
+                return;
+            
+            TestCollection.Remove(item);
+        }
+        
+        public partial class TestObj
+        {
+            [Notify] private string _name;
+
+            public TestObj(string name)
+            {
+                Name = name;
+            }
         }
     }
 }
