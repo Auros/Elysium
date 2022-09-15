@@ -193,8 +193,10 @@ namespace Elysium
             foreach (var local in localRecurses)
             {
                 var context = local.GetComponent<ComponentPropertyBinding>();
+                
                 if (!context)
                     continue;
+                
                 contexts.Add(context);
             }
             return contexts;
